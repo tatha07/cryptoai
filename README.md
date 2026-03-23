@@ -16,6 +16,7 @@ A modern, AI-powered cryptocurrency market analysis dashboard built with React a
 - **Frontend Framework**: React 19
 - **Build Tool**: Vite with HMR (Hot Module Replacement)
 - **Styling**: Tailwind CSS with PostCSS & Autoprefixer
+- **Charts**: Recharts for data visualization
 - **Animation**: HTML5 Canvas API
 - **Code Quality**: ESLint with React plugins
 - **Package Manager**: npm
@@ -47,6 +48,21 @@ npm run dev
 The app will be available at `http://localhost:5173`
 
 ## 📖 Usage
+
+After starting the development server with `npm run dev`, open your browser and navigate to `http://localhost:5173`. The dashboard will display:
+
+- Real-time cryptocurrency prices for Bitcoin, Ethereum, and Solana
+- 24-hour price change indicators
+- AI-generated trading verdicts with market analysis
+- Interactive charts powered by Recharts
+- Animated network background for visual appeal
+
+## 📜 Available Scripts
+
+- `npm run dev`: Start the development server with hot reload
+- `npm run build`: Build the project for production
+- `npm run lint`: Run ESLint to check code quality
+- `npm run preview`: Preview the production build locally
 
 1. **View Market Data**: The dashboard displays three major cryptocurrencies with current prices and 24-hour changes
 2. **Generate AI Verdicts**: Click the "Generate AI Verdict" button on any cryptocurrency card
@@ -97,5 +113,5 @@ The output will be in the `dist/` directory, ready for deployment to any static 
 ## 🚧 Project Status (In Active Development)
 - [x] Frontend UI and glassmorphism design
 - [x] Canvas-based neural network background animation
-- [ ] Integration with CoinGecko API for live price feeds (In Progress)
+- [x] Integration with CoinGecko API for live price feeds (In Progress)
 - [ ] Integration with Gemini API for dynamic LLM market analysis (In Progress)
