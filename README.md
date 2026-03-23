@@ -113,5 +113,5 @@ The output will be in the `dist/` directory, ready for deployment to any static 
 ## 🚧 Project Status (In Active Development)
 - [x] Frontend UI and glassmorphism design
 - [x] Canvas-based neural network background animation
-- [x] Integration with CoinGecko API for live price feeds (In Progress)
+- [x] Integration with CoinGecko API for live price feeds 
 - [ ] Integration with Gemini API for dynamic LLM market analysis (In Progress)
