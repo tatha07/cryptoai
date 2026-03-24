@@ -210,7 +210,19 @@ const GlobalVoiceAdvisor = ({ marketData, isKira }) => {
         utterance.onend = () => setIsSpeaking(false);
         window.speechSynthesis.speak(utterance);
       } catch (error) {
-        setChatLog({ user: transcript, ai: "Error connecting to the global neural network." });
+        console.error("Voice AI Error:", error);
+        const isRateLimit = error?.status === 429 || error?.message?.includes('429');
+        const errorMessage = isRateLimit 
+          ? "My neural network is receiving too many requests. Please give me about sixty seconds to cool down." 
+          : "I have lost connection to the global network. Please check my API key.";
+        setChatLog({ user: transcript, ai: errorMessage });
+        const utterance = new SpeechSynthesisUtterance(errorMessage);
+        utterance.voice = getVoiceForPersona();
+        utterance.rate = 1.05; 
+        utterance.pitch = isKira ? 1.1 : 0.9; 
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        window.speechSynthesis.speak(utterance);
       }
     };
     recognition.onerror = () => { setIsListening(false); setChatLog({ user: "Microphone error.", ai: "Try again." }); };
