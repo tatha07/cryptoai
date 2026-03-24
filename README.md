@@ -2,7 +2,6 @@
 
 A cutting-edge, AI-powered cryptocurrency market analysis dashboard with voice interaction. Built with React 19, Vite, and Google's Generative AI, Crypto Advisor combines real-time market data, interactive charting, and intelligent trading analysis with a sleek, cyberpunk-inspired UI.
 
-**Live Demo**: [crypto-advisor.vercel.app](https://crypto-advisor.vercel.app)
 
 ---
 
