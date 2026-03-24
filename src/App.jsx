@@ -1,27 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-// ==========================================
-// 1. ANIMATED NETWORK BACKGROUND
-// ==========================================
 const NetworkBackground = ({ isKira }) => {
   const canvasRef = useRef(null);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let particlesArray = [];
     let animationFrameId;
-
     const setCanvasSize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
-    
     window.addEventListener('resize', setCanvasSize);
     setCanvasSize();
-
     class Particle {
       constructor() {
         this.x = Math.random() * canvas.width;
@@ -43,7 +35,6 @@ const NetworkBackground = ({ isKira }) => {
         ctx.fill();
       }
     }
-
     const init = () => {
       particlesArray = [];
       const numberOfParticles = (canvas.width * canvas.height) / 15000; 
@@ -51,7 +42,6 @@ const NetworkBackground = ({ isKira }) => {
         particlesArray.push(new Particle());
       }
     };
-
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let i = 0; i < particlesArray.length; i++) {
@@ -63,7 +53,6 @@ const NetworkBackground = ({ isKira }) => {
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < 120) { 
             ctx.beginPath();
-            // THEME SWITCH: Rose Gold for Kira, Cyan for Kiro
             const r = isKira ? 251 : 34;
             const g = isKira ? 113 : 211;
             const b = isKira ? 133 : 238;
@@ -77,16 +66,13 @@ const NetworkBackground = ({ isKira }) => {
       }
       animationFrameId = requestAnimationFrame(animate);
     };
-
     init();
     animate();
-
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', setCanvasSize);
     };
-  }, [isKira]); // Re-run animation if theme changes
-
+  }, [isKira]); 
   return (
     <canvas 
       ref={canvasRef} 
@@ -95,18 +81,11 @@ const NetworkBackground = ({ isKira }) => {
     />
   );
 };
-
-// ==========================================
-// 2. BLOOMBERG CHART (THEMED)
-// ==========================================
 const BloombergChart = ({ coinId, coinName, isKira }) => {
   const [chartData, setChartData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Theme Colors
-  const mainColor = isKira ? '#fb7185' : '#22d3ee'; // Rose-400 vs Cyan-400
+  const mainColor = isKira ? '#fb7185' : '#22d3ee'; 
   const glowShadow = isKira ? 'rgba(251,113,133,0.2)' : 'rgba(34,211,238,0.2)';
-
   useEffect(() => {
     const fetchHistory = async () => {
       setIsLoading(true);
@@ -153,7 +132,6 @@ const BloombergChart = ({ coinId, coinName, isKira }) => {
     }
     return null;
   };
-
   return (
     <div className={`w-full bg-[#050505] border border-gray-800 p-6 rounded-xl shadow-2xl relative overflow-hidden z-10 mb-8 transition-colors duration-500`}>
       <div className="flex justify-between items-end mb-6 border-b border-gray-800 pb-4">
@@ -179,30 +157,20 @@ const BloombergChart = ({ coinId, coinName, isKira }) => {
     </div>
   );
 };
-
-// ==========================================
-// 3. GLOBAL VOICE ADVISOR (MACRO AI)
-// ==========================================
 const GlobalVoiceAdvisor = ({ marketData, isKira }) => {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [chatLog, setChatLog] = useState({ user: "", ai: "" });
-  
-  // NEW: State to track if the AI has introduced itself yet
   const [hasIntroduced, setHasIntroduced] = useState(false);
-
   const persona = isKira ? 'Kira' : 'Kiro';
   const themeColorText = isKira ? 'text-rose-400' : 'text-cyan-400';
   const themeColorBorder = isKira ? 'border-rose-500' : 'border-cyan-500';
   const themeColorBg = isKira ? 'bg-rose-600' : 'bg-cyan-600';
-
-  // If the user switches the theme, reset the introduction!
   useEffect(() => {
     setChatLog({ user: "", ai: `System initialized. I am ${persona}, your macro advisor. Click the mic to begin.` });
     setHasIntroduced(false); 
   }, [isKira]);
-
   const getVoiceForPersona = () => {
     const voices = window.speechSynthesis.getVoices();
     if (isKira) {
@@ -211,47 +179,36 @@ const GlobalVoiceAdvisor = ({ marketData, isKira }) => {
       return voices.find(v => v.name.includes('Google UK English Male') || v.name.includes('Male') || v.name.includes('David')) || voices.find(v => v.lang.startsWith('en'));
     }
   };
-
-  // Helper function to handle the microphone listening part
   const startRecognition = (SpeechRecognition) => {
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
-    
     recognition.onstart = () => {
       setIsListening(true);
       setIsOpen(true);
       setChatLog(prev => ({ ...prev, user: "Listening..." }));
     };
-    
     recognition.onresult = async (event) => {
       setIsListening(false);
       const transcript = event.results[0][0].transcript;
       setChatLog({ user: transcript, ai: `Analyzing data as ${persona}...` });
-
       try {
         const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
         const topCoinsSummary = marketData.slice(0, 10).map(c => `${c.name} ($${c.price.toLocaleString()}, ${c.change}%)`).join(" | ");
-
         const prompt = `You are a high-end, human-sounding macro-economic crypto advisor named ${persona}.
         Context: ${topCoinsSummary}
         User asks: "${transcript}"
         Provide a highly conversational, insightful, and concise answer (max 3 sentences). Speak naturally.`;
-
         const result = await model.generateContent(prompt);
         const aiResponseText = result.response.text();
-
         setChatLog({ user: transcript, ai: aiResponseText });
-
         const utterance = new SpeechSynthesisUtterance(aiResponseText);
         utterance.voice = getVoiceForPersona();
         utterance.rate = 1.05; 
         utterance.pitch = isKira ? 1.1 : 0.9; 
-        
         utterance.onstart = () => setIsSpeaking(true);
         utterance.onend = () => setIsSpeaking(false);
         window.speechSynthesis.speak(utterance);
-
       } catch (error) {
         setChatLog({ user: transcript, ai: "Error connecting to the global neural network." });
       }
@@ -259,41 +216,29 @@ const GlobalVoiceAdvisor = ({ marketData, isKira }) => {
     recognition.onerror = () => { setIsListening(false); setChatLog({ user: "Microphone error.", ai: "Try again." }); };
     recognition.start();
   };
-
   const handleGlobalVoiceChat = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return alert("Voice features require Chrome or Edge.");
-
     window.speechSynthesis.cancel();
-
-    // NEW: THE INTRODUCTION FLOW
     if (!hasIntroduced) {
       setHasIntroduced(true);
       setIsOpen(true);
-      
       const introText = `Hello, I am ${persona}, your macro advisor. What would you like to analyze?`;
       setChatLog({ user: "", ai: introText });
-
       const utterance = new SpeechSynthesisUtterance(introText);
       utterance.voice = getVoiceForPersona();
       utterance.rate = 1.05;
       utterance.pitch = isKira ? 1.1 : 0.9;
-      
       utterance.onstart = () => setIsSpeaking(true);
-      
-      // The magic trick: Turn on the mic EXACTLY when the AI finishes speaking
       utterance.onend = () => {
         setIsSpeaking(false);
         startRecognition(SpeechRecognition);
       };
-      
       window.speechSynthesis.speak(utterance);
     } else {
-      // If they've already been introduced, skip the intro and just listen
       startRecognition(SpeechRecognition);
     }
   };
-
   return (
     <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
       {isOpen && (
@@ -317,18 +262,15 @@ const GlobalVoiceAdvisor = ({ marketData, isKira }) => {
             `bg-gray-900 ${themeColorBorder} hover:scale-105 hover:bg-gray-800`}`}
       >
         {isListening ? (
-          /* Sleek SVG Microphone */
           <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 11v1a7 7 0 01-14 0v-1M12 4a3 3 0 00-3 3v4a3 3 0 006 0V7a3 3 0 00-3-3z"></path>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 19v3"></path>
           </svg>
         ) : isSpeaking ? (
-          /* Sleek SVG Audio/Speaking Indicator */
           <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
           </svg>
         ) : (
-          /* Minimalist Finance AI Logo */
           <span className={`text-3xl font-black font-mono italic ${themeColorText} drop-shadow-md`}>
             $
           </span>
@@ -337,20 +279,13 @@ const GlobalVoiceAdvisor = ({ marketData, isKira }) => {
     </div>
   );
 };
-
-// ==========================================
-// 4. INDIVIDUAL CRYPTO CARD (THEMED)
-// ==========================================
 const CryptoCard = ({ id, name, symbol, price, change, icon, isActive, onSelect, isKira }) => {
   const [verdict, setVerdict] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const isPositive = change >= 0;
-
-  // Dynamic Glow based on Theme
   const activeGlow = isKira 
     ? 'border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]' 
     : 'border-cyan-500 shadow-[0_0_15px_rgba(34,211,238,0.3)]';
-
   const handleGenerateVerdict = async (e) => {
     e.stopPropagation(); 
     setIsAnalyzing(true);
@@ -360,7 +295,6 @@ const CryptoCard = ({ id, name, symbol, price, change, icon, isActive, onSelect,
       const prompt = `You are a crypto analyst. Asset: ${name}. Price: $${price}. 24h: ${change}%. Action: BUY/HOLD/SELL. Give 2 sentence reason in JSON {"action": "", "reason": ""}`;
       const result = await model.generateContent(prompt);
       const aiData = JSON.parse(result.response.text());
-      
       let colorClass = 'bg-gray-950/50 text-gray-400 border border-gray-900/50';
       if (aiData.action === 'BUY') colorClass = 'bg-emerald-950/50 text-emerald-400 border border-emerald-900/50';
       if (aiData.action === 'SELL') colorClass = 'bg-rose-950/50 text-rose-400 border border-rose-900/50';
@@ -370,7 +304,6 @@ const CryptoCard = ({ id, name, symbol, price, change, icon, isActive, onSelect,
       setVerdict({ action: "ERROR", color: "bg-red-950/50 text-red-500 border-red-900/50", reason: "API Error." });
     } finally { setIsAnalyzing(false); }
   };
-
   return (
     <div 
       onClick={() => onSelect({ id, name })}
@@ -411,19 +344,12 @@ const CryptoCard = ({ id, name, symbol, price, change, icon, isActive, onSelect,
     </div>
   );
 };
-
-// ==========================================
-// 5. MAIN DASHBOARD (MASTER STATE)
-// ==========================================
 export default function CryptoAdvisorDashboard() {
   const [marketData, setMarketData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState(false);
   const [activeChartCoin, setActiveChartCoin] = useState({ id: 'bitcoin', name: 'Bitcoin' });
-  
-  // THE MASTER THEME STATE
   const [isKira, setIsKira] = useState(false); 
-
   useEffect(() => {
     const fetchLivePrices = async () => {
       try {
@@ -447,17 +373,11 @@ export default function CryptoAdvisorDashboard() {
     };
     fetchLivePrices();
   }, []);
-
   return (
     <div className="min-h-screen bg-transparent p-4 md:p-8 font-sans relative overflow-hidden transition-colors duration-500">
-      
-      {/* Background knows the theme */}
       <NetworkBackground isKira={isKira} /> 
-
-      {/* TOP LEFT THEME TOGGLE */}
       <div className="absolute top-6 left-6 z-50 flex items-center gap-3 bg-black/60 backdrop-blur-md p-2 rounded-xl border border-gray-800">
         <span className={`text-xs font-bold font-mono ${!isKira ? 'text-cyan-400' : 'text-gray-500'}`}>KIRO</span>
-        
         <button 
           onClick={() => {
             setIsKira(!isKira);
@@ -467,10 +387,8 @@ export default function CryptoAdvisorDashboard() {
         >
           <div className={`w-4 h-4 rounded-full absolute transition-all duration-300 shadow-lg ${isKira ? 'bg-rose-500 right-1' : 'bg-cyan-500 left-1'}`}></div>
         </button>
-
         <span className={`text-xs font-bold font-mono ${isKira ? 'text-rose-400' : 'text-gray-500'}`}>KIRA</span>
       </div>
-
       <div className="max-w-6xl mx-auto relative z-10 pt-10">
         <header className="mb-10 text-center">
           <h1 className="text-4xl font-extrabold text-white mb-2 tracking-tighter">
@@ -483,10 +401,7 @@ export default function CryptoAdvisorDashboard() {
             {apiError && <span className="text-xs font-mono text-yellow-500 bg-yellow-900/30 px-2 py-1 rounded border border-yellow-900/50">⚠️ USING OFFLINE CACHE</span>}
           </div>
         </header>
-
-        {/* Chart knows the theme */}
-        <BloombergChart coinId={activeChartCoin.id} coinName={activeChartCoin.name} isKira={isKira} />
-
+        <BloombergChart coinId={activeChartCoin.id} coinName={activeChartCoin.name} isKira={isKira} /> 
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${isKira ? 'border-rose-500' : 'border-cyan-500'}`}></div>
@@ -502,8 +417,6 @@ export default function CryptoAdvisorDashboard() {
           </div>
         )}
       </div>
-
-      {/* Voice Advisor knows the theme */}
       <GlobalVoiceAdvisor marketData={marketData} isKira={isKira} />
     </div>
   );

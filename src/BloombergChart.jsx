@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
 const BloombergChart = ({ coinId, coinName }) => {
   const [chartData, setChartData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     const fetchHistory = async () => {
       setIsLoading(true);
       try {
         const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=30`);
-        
-        // FIX 1: If the API blocks us, immediately throw an error to trigger the fallback
         if (!response.ok) throw new Error('API Rate Limited');
-        
         const data = await response.json();
-
-        // FIX 2: Double check that the data actually contains the 'prices' array before trying to map it
         if (!data.prices) throw new Error('No price data returned');
-
         const formattedData = data.prices.map(([timestamp, price]) => {
           const date = new Date(timestamp);
           return {
@@ -27,17 +19,12 @@ const BloombergChart = ({ coinId, coinName }) => {
             price: price
           };
         });
-
         setChartData(formattedData);
       } catch (error) {
         console.error("Chart API failed, engaging offline simulation mode:", error);
-        
-        // FIX 3: The Fallback. Generate 30 days of realistic-looking fake volatility 
-        // so your presentation never has a blank screen.
         const mockData = Array.from({ length: 30 }).map((_, i) => {
           const d = new Date();
           d.setDate(d.getDate() - (30 - i));
-          // Creates a wavy, realistic looking chart pattern
           const basePrice = coinId === 'bitcoin' ? 64000 : coinId === 'ethereum' ? 3400 : 140;
           const noise = (Math.random() - 0.5) * (basePrice * 0.05); 
           return {
@@ -46,18 +33,15 @@ const BloombergChart = ({ coinId, coinName }) => {
             price: basePrice + noise
           };
         });
-        
         setChartData(mockData);
       } finally {
         setIsLoading(false);
       }
     };
-
     if (coinId) {
       fetchHistory();
     }
   }, [coinId]); 
-
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
@@ -71,7 +55,6 @@ const BloombergChart = ({ coinId, coinName }) => {
     }
     return null;
   };
-
   return (
     <div className="w-full bg-[#050505] border border-gray-800 p-6 rounded-xl shadow-2xl relative overflow-hidden z-10 mb-8">
       <div className="flex justify-between items-end mb-6 border-b border-gray-800 pb-4">
@@ -81,7 +64,6 @@ const BloombergChart = ({ coinId, coinName }) => {
         </div>
         {isLoading && <span className="text-cyan-400 font-mono text-sm animate-pulse">FETCHING NODE DATA_</span>}
       </div>
-
       <div className="h-80 w-full">
         {!isLoading && chartData.length > 0 && (
           <ResponsiveContainer width="100%" height="100%">
@@ -98,5 +80,4 @@ const BloombergChart = ({ coinId, coinName }) => {
     </div>
   );
 };
-
 export default BloombergChart;
