@@ -291,7 +291,7 @@ const CryptoCard = ({ id, name, symbol, price, change, icon, isActive, onSelect,
     setIsAnalyzing(true);
     try {
       const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig: { responseMimeType: "application/json" } });
+      const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview", generationConfig: { responseMimeType: "application/json" } });
       const prompt = `You are a crypto analyst. Asset: ${name}. Price: $${price}. 24h: ${change}%. Action: BUY/HOLD/SELL. Give 2 sentence reason in JSON {"action": "", "reason": ""}`;
       const result = await model.generateContent(prompt);
       const aiData = JSON.parse(result.response.text());
