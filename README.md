@@ -269,16 +269,3 @@ For questions or issues, please visit the [GitHub repository](https://github.com
 
 ---
 
-**Last Updated**: March 2026 | **Version**: 1.0.0
-└── package.json                # Project dependencies
-```
-
-## 🚀 Deployment
-
-Build the optimized production version:
-```bash
-npm run build
-```
-
-The output will be in the `dist/` directory, ready for deployment to any static hosting platform (Vercel, Netlify, GitHub Pages, etc.).
-
